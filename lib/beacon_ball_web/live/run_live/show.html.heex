@@ -1,0 +1,36 @@
+<h1>Show Run</h1>
+
+<%= if @live_action in [:edit] do %>
+  <.modal return_to={Routes.run_show_path(@socket, :show, @run)}>
+    <.live_component
+      module={BeaconBallWeb.RunLive.FormComponent}
+      id={@run.id}
+      title={@page_title}
+      action={@live_action}
+      run={@run}
+      return_to={Routes.run_show_path(@socket, :show, @run)}
+    />
+  </.modal>
+<% end %>
+
+<ul>
+
+  <li>
+    <strong>Starts at:</strong>
+    <%= @run.starts_at %>
+  </li>
+
+  <li>
+    <strong>Max capacity:</strong>
+    <%= @run.max_capacity %>
+  </li>
+
+  <li>
+    <strong>Message:</strong>
+    <%= @run.message %>
+  </li>
+
+</ul>
+
+<span><%= live_patch "Edit", to: Routes.run_show_path(@socket, :edit, @run), class: "button" %></span> |
+<span><%= live_redirect "Back", to: Routes.run_index_path(@socket, :index) %></span>

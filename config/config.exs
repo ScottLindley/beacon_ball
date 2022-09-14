@@ -8,8 +8,7 @@
 import Config
 
 config :beacon_ball,
-  ecto_repos: [BeaconBall.Repo],
-  migration_primary_key: [type: :uuid]
+  ecto_repos: [BeaconBall.Repo]
 
 # Configures the endpoint
 config :beacon_ball, BeaconBallWeb.Endpoint,
