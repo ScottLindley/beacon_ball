@@ -13,7 +13,7 @@ defmodule BeaconBall.RunsFixtures do
       |> Enum.into(%{
         max_capacity: 42,
         message: "some message",
-        starts_at: ~N[2022-09-13 00:35:00]
+        starts_at: ~N[3022-09-13 00:35:00]
       })
       |> BeaconBall.Runs.create_run()
 

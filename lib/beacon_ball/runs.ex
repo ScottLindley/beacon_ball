@@ -101,4 +101,19 @@ defmodule BeaconBall.Runs do
   def change_run(%Run{} = run, attrs \\ %{}) do
     Run.changeset(run, attrs)
   end
+
+  @doc """
+  Returns a virtual Run containing default values.
+
+  Can be used to obtain default values when creating a new Run.
+  """
+  def build_default_run() do
+    starts_at =
+      :calendar.local_time()
+      # Today at 5:30pm
+      |> (fn {date, _time} -> {date, {17, 30, 00}} end).()
+      |> NaiveDateTime.from_erl!()
+
+    %Run{starts_at: starts_at, max_capacity: 12}
+  end
 end

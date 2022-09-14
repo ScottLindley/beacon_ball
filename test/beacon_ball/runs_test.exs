@@ -21,31 +21,48 @@ defmodule BeaconBall.RunsTest do
     end
 
     test "create_run/1 with valid data creates a run" do
-      valid_attrs = %{max_capacity: 42, message: "some message", starts_at: ~N[2022-09-13 00:35:00]}
+      valid_attrs = %{
+        max_capacity: 42,
+        message: "some message",
+        starts_at: ~N[3022-09-13 00:35:00]
+      }
 
       assert {:ok, %Run{} = run} = Runs.create_run(valid_attrs)
       assert run.max_capacity == 42
       assert run.message == "some message"
-      assert run.starts_at == ~N[2022-09-13 00:35:00]
+      assert run.starts_at == ~N[3022-09-13 00:35:00]
     end
 
     test "create_run/1 with invalid data returns error changeset" do
       assert {:error, %Ecto.Changeset{}} = Runs.create_run(@invalid_attrs)
+      # Test for `starts_at` date time that is in the past
+      assert {:error, %Ecto.Changeset{}} =
+               Runs.create_run(%{@invalid_attrs | starts_at: NaiveDateTime.utc_now()})
     end
 
     test "update_run/2 with valid data updates the run" do
       run = run_fixture()
-      update_attrs = %{max_capacity: 43, message: "some updated message", starts_at: ~N[2022-09-14 00:35:00]}
+
+      update_attrs = %{
+        max_capacity: 43,
+        message: "some updated message",
+        starts_at: ~N[3022-09-14 00:35:00]
+      }
 
       assert {:ok, %Run{} = run} = Runs.update_run(run, update_attrs)
       assert run.max_capacity == 43
       assert run.message == "some updated message"
-      assert run.starts_at == ~N[2022-09-14 00:35:00]
+      assert run.starts_at == ~N[3022-09-14 00:35:00]
     end
 
     test "update_run/2 with invalid data returns error changeset" do
       run = run_fixture()
       assert {:error, %Ecto.Changeset{}} = Runs.update_run(run, @invalid_attrs)
+      assert run == Runs.get_run!(run.id)
+      # Test for `starts_at` date time that is in the past
+      assert {:error, %Ecto.Changeset{}} =
+               Runs.update_run(run, %{@invalid_attrs | starts_at: NaiveDateTime.utc_now()})
+
       assert run == Runs.get_run!(run.id)
     end
 

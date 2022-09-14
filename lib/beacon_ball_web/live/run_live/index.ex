@@ -23,7 +23,7 @@ defmodule BeaconBallWeb.RunLive.Index do
   defp apply_action(socket, :new, _params) do
     socket
     |> assign(:page_title, "New Run")
-    |> assign(:run, %Run{})
+    |> assign(:run, Runs.build_default_run())
   end
 
   defp apply_action(socket, :index, _params) do

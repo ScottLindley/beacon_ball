@@ -4,9 +4,21 @@ defmodule BeaconBallWeb.RunLiveTest do
   import Phoenix.LiveViewTest
   import BeaconBall.RunsFixtures
 
-  @create_attrs %{max_capacity: 42, message: "some message", starts_at: %{day: 13, hour: 0, minute: 35, month: 9, year: 2022}}
-  @update_attrs %{max_capacity: 43, message: "some updated message", starts_at: %{day: 14, hour: 0, minute: 35, month: 9, year: 2022}}
-  @invalid_attrs %{max_capacity: nil, message: nil, starts_at: %{day: 30, hour: 0, minute: 35, month: 2, year: 2022}}
+  @create_attrs %{
+    max_capacity: 42,
+    message: "some message",
+    starts_at: %{day: 13, hour: 0, minute: 35, month: 9, year: 2022}
+  }
+  @update_attrs %{
+    max_capacity: 43,
+    message: "some updated message",
+    starts_at: %{day: 14, hour: 0, minute: 35, month: 9, year: 2022}
+  }
+  @invalid_attrs %{
+    max_capacity: nil,
+    message: nil,
+    starts_at: %{day: 30, hour: 0, minute: 35, month: 2, year: 2022}
+  }
 
   defp create_run(_) do
     run = run_fixture()
