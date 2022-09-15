@@ -2,7 +2,6 @@ defmodule BeaconBallWeb.RunLive.Index do
   use BeaconBallWeb, :live_view
 
   alias BeaconBall.Runs
-  alias BeaconBall.Runs.Run
 
   @impl true
   def mount(_params, _session, socket) do
