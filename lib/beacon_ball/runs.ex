@@ -18,7 +18,7 @@ defmodule BeaconBall.Runs do
 
   """
   def list_runs do
-    Repo.all(Run)
+    Repo.all(from r in Run, limit: 30)
   end
 
   @doc """

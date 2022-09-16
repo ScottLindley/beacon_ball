@@ -18,12 +18,21 @@ defmodule BeaconBallWeb.Router do
     pipe_through :browser
 
     get "/", PageController, :index
+
+    live "/players", PlayerLive.Index, :index
+    live "/players/new", PlayerLive.Index, :new
+    live "/players/:id/edit", PlayerLive.Index, :edit
+
+    live "/players/:id", PlayerLive.Show, :show
+    live "/players/:id/show/edit", PlayerLive.Show, :edit
+
     live "/runs", RunLive.Index, :index
     live "/runs/new", RunLive.Index, :new
     live "/runs/:id/edit", RunLive.Index, :edit
 
     live "/runs/:id", RunLive.Show, :show
     live "/runs/:id/show/edit", RunLive.Show, :edit
+    
   end
 
   # Other scopes may use custom stacks.
