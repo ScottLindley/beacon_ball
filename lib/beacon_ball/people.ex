@@ -107,6 +107,14 @@ defmodule BeaconBall.People do
     Player.changeset(player, attrs)
   end
 
+  @doc """
+  Begins login flow for a person given a phone number.
+
+  If a player with the provided phone number exists, we text
+  a verification code to the phone number and return a successful response.
+
+  After receiving the verification code, a person can complete the login flow with `login_verify`.
+  """
   def login(phone_number) when is_binary(phone_number) do
     case parse_phone_number_input(phone_number) do
       {:error, message} -> {:error, message}
@@ -115,17 +123,33 @@ defmodule BeaconBall.People do
         if player === nil do
          {:error, "No player found for that phone number"}
         else
+          verification_code = gen_verification_code()
           %Session{}
           |> Session.changeset(%{
+            player_id: player.id,
             expires_at: four_weeks_from_now(),
-            # Generate radom code, use a secret to hash before persisting
-            hashed_verification_code: "",
-            player: player
+            hashed_verification_code: verification_code |> salt_and_hash(parsed_phone_number)
            })
-          |> Repo.insert()
-           
+          |> Repo.insert!()
+          
+          IO.puts verification_code
           # Send SMS with verification code, return :ok
+          {:ok}
         end
+    end
+  end
+
+  def login_verify(phone_number, verification_code) do
+    hashed_code = salt_and_hash(verification_code, phone_number)
+    case Repo.get_by(Session, hashed_verification_code: hashed_code) do
+      nil -> {:error, "Unrecognized verification code"}
+      session ->
+        token = gen_session_token()
+        session
+        |> Session.changeset(%{hashed_token: hash_session_token(token)})
+        |> Repo.update!()
+
+        {:ok, token}
     end
   end
 
@@ -138,5 +162,23 @@ defmodule BeaconBall.People do
 
   defp four_weeks_from_now do
     NaiveDateTime.add(NaiveDateTime.utc_now(), 1 * 60 * 60 * 24 * 28, :second)
+  end
+
+  defp gen_verification_code do
+    rand_digit = fn () -> :rand.uniform(10) - 1 end
+    "#{rand_digit.()}#{rand_digit.()}#{rand_digit.()}#{rand_digit.()}"
+  end
+
+  defp gen_session_token do
+    Ecto.UUID.generate()
+  end
+
+  defp hash_session_token(token) when is_binary(token) do
+    # Session tokens are UUIDs, therefore no salt is needed since they are unique. 
+    salt_and_hash(token, "")
+  end
+
+  defp salt_and_hash(value, salt) do
+    :crypto.hash(:sha256, "#{value}#{salt}") |> Base.encode16()
   end
 end
