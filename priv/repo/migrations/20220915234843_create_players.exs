@@ -9,7 +9,7 @@ defmodule BeaconBall.Repo.Migrations.CreatePlayers do
 
       timestamps()
     end
-    
+
     create unique_index(:players, [:phone_number])
   end
 end

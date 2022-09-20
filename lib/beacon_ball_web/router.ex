@@ -32,7 +32,6 @@ defmodule BeaconBallWeb.Router do
 
     live "/runs/:id", RunLive.Show, :show
     live "/runs/:id/show/edit", RunLive.Show, :edit
-    
   end
 
   # Other scopes may use custom stacks.

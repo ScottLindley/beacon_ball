@@ -117,23 +117,30 @@ defmodule BeaconBall.People do
   """
   def login(phone_number) when is_binary(phone_number) do
     case parse_phone_number_input(phone_number) do
-      {:error, message} -> {:error, message}
+      {:error, message} ->
+        {:error, message}
+
       {:ok, parsed_phone_number} ->
         player = get_player_by_phone_number(parsed_phone_number)
+
         if player === nil do
-         {:error, "No player found for that phone number"}
+          {:error, "No player found for that phone number"}
         else
           verification_code = gen_verification_code()
+
           %Session{}
           |> Session.changeset(%{
             player_id: player.id,
             expires_at: four_weeks_from_now(),
             hashed_verification_code: verification_code |> salt_and_hash(parsed_phone_number)
-           })
+          })
           |> Repo.insert!()
-          
-          IO.puts verification_code
-          # Send SMS with verification code, return :ok
+
+          BeaconBall.Notifications.Twilio.send_sms(
+            parsed_phone_number,
+            "Beacon Ball verification code: #{verification_code}"
+          )
+
           {:ok}
         end
     end
@@ -141,10 +148,14 @@ defmodule BeaconBall.People do
 
   def login_verify(phone_number, verification_code) do
     hashed_code = salt_and_hash(verification_code, phone_number)
+
     case Repo.get_by(Session, hashed_verification_code: hashed_code) do
-      nil -> {:error, "Unrecognized verification code"}
+      nil ->
+        {:error, "Unrecognized verification code"}
+
       session ->
         token = gen_session_token()
+
         session
         |> Session.changeset(%{hashed_token: hash_session_token(token)})
         |> Repo.update!()
@@ -165,7 +176,7 @@ defmodule BeaconBall.People do
   end
 
   defp gen_verification_code do
-    rand_digit = fn () -> :rand.uniform(10) - 1 end
+    rand_digit = fn -> :rand.uniform(10) - 1 end
     "#{rand_digit.()}#{rand_digit.()}#{rand_digit.()}#{rand_digit.()}"
   end
 
