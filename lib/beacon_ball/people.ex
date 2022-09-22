@@ -43,24 +43,14 @@ defmodule BeaconBall.People do
   end
 
   def get_player_by_session(session) do
-    case session do
-      nil -> nil
-      session -> Repo.get(Player, session.player_id)
-    end
+    if session == nil, do: nil, else: Repo.get(Player, session.player_id)
   end
 
   def get_session_by_token(token) when is_binary(token) do
-    session = Repo.get_by(Session, hashed_token: hash_session_token(token))
+    session = Repo.get_by(Session, hashed_token: Session.hash_session_token(token))
 
-    if session do
-      # Only return player if session is not expired
-      case NaiveDateTime.compare(session.expires_at, NaiveDateTime.utc_now()) do
-        :gt -> session
-        _ -> nil
-      end
-    else
-      nil
-    end
+    # Only return player if session is not expired
+    if Session.is_session_expired?(session), do: nil, else: session
   end
 
   @doc """
@@ -148,22 +138,11 @@ defmodule BeaconBall.People do
         if player == nil do
           {:error, "No player found for that phone number"}
         else
-          verification_code = gen_verification_code()
+          # Clean up orphaned sessions while we're here so the sessions table doesn't grow out of control
+          Session.clean_orphaned_sessions(player.id)
 
-          now = NaiveDateTime.utc_now()
-          # Clean up orphaned sessions while we're here so this table doesn't grow out of control
-          from(s in "sessions",
-            where: s.expires_at <= ^now or is_nil(s.hashed_token)
-          )
-          |> Repo.delete_all()
-
-          %Session{}
-          |> Session.changeset(%{
-            player_id: player.id,
-            expires_at: four_weeks_from_now(),
-            hashed_verification_code: verification_code |> salt_and_hash(parsed_phone_number)
-          })
-          |> Repo.insert!()
+          verification_code = Session.gen_verification_code()
+          Session.create_unverified_session(player.id, parsed_phone_number, verification_code)
 
           with {:error, message} <-
                  BeaconBall.Notifications.Twilio.send_sms(
@@ -179,42 +158,15 @@ defmodule BeaconBall.People do
   end
 
   def login_verify(phone_number, verification_code) do
-    hashed_code = salt_and_hash(verification_code, phone_number)
+    hashed_code = Session.salt_and_hash(verification_code, phone_number)
 
     case Repo.get_by(Session, hashed_verification_code: hashed_code) do
       nil ->
         {:error, "Unrecognized verification code"}
 
       session ->
-        token = gen_session_token()
-
-        session
-        |> Session.changeset(%{hashed_token: hash_session_token(token)})
-        |> Repo.update!()
-
+        token = Session.verify_session(session)
         {:ok, token}
     end
-  end
-
-  defp four_weeks_from_now do
-    NaiveDateTime.add(NaiveDateTime.utc_now(), 1 * 60 * 60 * 24 * 28, :second)
-  end
-
-  defp gen_verification_code do
-    rand_digit = fn -> :rand.uniform(10) - 1 end
-    "#{rand_digit.()}#{rand_digit.()}#{rand_digit.()}#{rand_digit.()}"
-  end
-
-  defp gen_session_token do
-    Ecto.UUID.generate()
-  end
-
-  defp hash_session_token(token) when is_binary(token) do
-    # Session tokens are UUIDs, therefore no salt is needed since they are unique.
-    salt_and_hash(token, "")
-  end
-
-  defp salt_and_hash(value, salt) do
-    :crypto.hash(:sha256, "#{value}#{salt}") |> Base.encode16()
   end
 end
