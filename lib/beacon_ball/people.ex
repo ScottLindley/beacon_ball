@@ -165,10 +165,13 @@ defmodule BeaconBall.People do
           })
           |> Repo.insert!()
 
-          BeaconBall.Notifications.Twilio.send_sms(
-            parsed_phone_number,
-            "Beacon Ball verification code: #{verification_code}"
-          )
+          with {:error, message} <-
+                 BeaconBall.Notifications.Twilio.send_sms(
+                   parsed_phone_number,
+                   "Beacon Ball verification code: #{verification_code}"
+                 ) do
+            IO.puts("Error sending SMS: #{message}")
+          end
 
           {:ok, parsed_phone_number}
         end

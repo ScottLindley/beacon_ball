@@ -21,6 +21,15 @@ if System.get_env("PHX_SERVER") do
 end
 
 if config_env() == :prod do
+  twilio_phone_number = System.get_env("TWILIO_PHONE_NUMBER")
+  twilio_account_sid = System.get_env("TWILIO_ACCOUNT_SID")
+  twilio_auth_token = System.get_env("TWILIO_AUTH_TOKEN")
+
+  config :beacon_ball, :twilio_config,
+    phone_number: twilio_phone_number,
+    account_sid: twilio_account_sid,
+    auth_token: twilio_auth_token
+
   database_url =
     System.get_env("DATABASE_URL") ||
       raise """
