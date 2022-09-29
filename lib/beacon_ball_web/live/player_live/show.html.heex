@@ -8,6 +8,8 @@
       title={@page_title}
       action={@live_action}
       player={@player}
+      is_admin={@is_admin}
+      logged_in_player_id={@logged_in_player_id}
       return_to={Routes.player_show_path(@socket, :show, @player)}
     />
   </.modal>
@@ -32,5 +34,7 @@
 
 </ul>
 
-<span><%= live_patch "Edit", to: Routes.player_show_path(@socket, :edit, @player), class: "button" %></span> |
+<%= if @is_admin or @logged_in_player_id == @player.id do %>
+  <span><%= live_patch "Edit", to: Routes.player_show_path(@socket, :edit, @player), class: "button" %></span> |
+<% end %>
 <span><%= live_redirect "Back", to: Routes.player_index_path(@socket, :index) %></span>

@@ -1,11 +1,12 @@
 defmodule BeaconBallWeb.RunLive.Show do
   use BeaconBallWeb, :live_view
 
+  alias BeaconBall.People.Player
   alias BeaconBall.Runs
 
   @impl true
-  def mount(_params, _session, socket) do
-    {:ok, socket}
+  def mount(_params, %{"current_player" => current_player}, socket) do
+    {:ok, socket |> assign(:is_admin, Player.is_admin?(current_player))}
   end
 
   @impl true

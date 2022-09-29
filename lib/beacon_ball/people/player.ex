@@ -55,4 +55,8 @@ defmodule BeaconBall.People.Player do
     Regex.match?(~r/[0-9]{3}-[0-9]{3}-[0-9]{4}/, "#{phone_number}") or
       Regex.match?(~r/[0-9]{10}/, "#{phone_number}")
   end
+
+  def is_admin?(%__MODULE__{is_admin: is_admin}) do
+    is_admin
+  end
 end

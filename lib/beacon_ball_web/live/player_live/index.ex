@@ -5,8 +5,12 @@ defmodule BeaconBallWeb.PlayerLive.Index do
   alias BeaconBall.People.Player
 
   @impl true
-  def mount(_params, _session, socket) do
-    {:ok, assign(socket, :players, list_players())}
+  def mount(_params, %{"current_player" => current_player}, socket) do
+    {:ok,
+     socket
+     |> assign(:logged_in_player_id, current_player.id)
+     |> assign(:is_admin, Player.is_admin?(current_player))
+     |> assign(:players, list_players())}
   end
 
   @impl true
@@ -35,9 +39,18 @@ defmodule BeaconBallWeb.PlayerLive.Index do
   @impl true
   def handle_event("delete", %{"id" => id}, socket) do
     player = People.get_player!(id)
-    {:ok, _} = People.delete_player(player)
+    %{is_admin: is_admin} = socket.assigns
 
-    {:noreply, assign(socket, :players, list_players())}
+    case is_admin do
+      true ->
+        {:ok, _} = People.delete_player(player)
+        {:noreply, assign(socket, :players, list_players())}
+
+      false ->
+        {:noreply,
+         socket
+         |> put_flash(:error, "You are not authorized to delete players")}
+    end
   end
 
   defp list_players do

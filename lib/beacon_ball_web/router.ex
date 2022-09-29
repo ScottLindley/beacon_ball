@@ -1,7 +1,7 @@
 defmodule BeaconBallWeb.Router do
   use BeaconBallWeb, :router
 
-  for p <- [:browser, :browser_protected] do
+  for p <- [:browser_public, :browser_protected, :admin_only, :admin_or_self_only] do
     pipeline :"#{p}" do
       plug :accepts, ["html"]
       plug :fetch_session
@@ -11,16 +11,47 @@ defmodule BeaconBallWeb.Router do
       plug :put_secure_browser_headers
       plug BeaconBallWeb.Plugs.Authentication
 
-      if p == :browser_protected do
+      if p != :browser_public do
         plug BeaconBallWeb.Plugs.AuthOrRedirectToLogin
+      end
+
+      case p do
+        :admin_only ->
+          plug BeaconBallWeb.Plugs.AdminOnly
+
+        :admin_or_self_only ->
+          plug BeaconBallWeb.Plugs.AdminOrSelfOnly
+
+        _ ->
+          nil
       end
     end
   end
 
-  scope "/", BeaconBallWeb do
-    pipe_through :browser
+  scope "/login", BeaconBallWeb do
+    pipe_through :browser_public
 
-    live "/login", LoginLive.Index, :index
+    live "/", LoginLive.Index, :index
+  end
+
+  scope "/players", BeaconBallWeb do
+    pipe_through :admin_only
+    live "/new", PlayerLive.Index, :new
+  end
+
+  scope "/players", BeaconBallWeb do
+    pipe_through :admin_or_self_only
+
+    live "/:id/edit", PlayerLive.Index, :edit
+    live "/:id/show/edit", PlayerLive.Show, :edit
+  end
+
+  scope "/runs", BeaconBallWeb do
+    pipe_through :admin_only
+
+    live "/new", RunLive.Index, :new
+    live "/:id/edit", RunLive.Index, :edit
+    live "/:id/show/edit", RunLive.Show, :edit
   end
 
   scope "/", BeaconBallWeb do
@@ -29,18 +60,10 @@ defmodule BeaconBallWeb.Router do
     get "/", PageController, :index
 
     live "/players", PlayerLive.Index, :index
-    live "/players/new", PlayerLive.Index, :new
-    live "/players/:id/edit", PlayerLive.Index, :edit
-
     live "/players/:id", PlayerLive.Show, :show
-    live "/players/:id/show/edit", PlayerLive.Show, :edit
 
     live "/runs", RunLive.Index, :index
-    live "/runs/new", RunLive.Index, :new
-    live "/runs/:id/edit", RunLive.Index, :edit
-
     live "/runs/:id", RunLive.Show, :show
-    live "/runs/:id/show/edit", RunLive.Show, :edit
   end
 
   # Enables LiveDashboard only for development
@@ -54,7 +77,7 @@ defmodule BeaconBallWeb.Router do
     import Phoenix.LiveDashboard.Router
 
     scope "/" do
-      pipe_through :browser
+      pipe_through :browser_public
 
       live_dashboard "/dashboard", metrics: BeaconBallWeb.Telemetry
     end

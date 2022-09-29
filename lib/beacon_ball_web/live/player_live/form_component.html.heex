@@ -17,9 +17,11 @@
     <%= number_input f, :phone_number %>
     <%= error_tag f, :phone_number %>
   
-    <%= label f, :is_admin %>
-    <%= checkbox f, :is_admin %>
-    <%= error_tag f, :is_admin %>
+    <%= if @is_admin do %>
+      <%= label f, :is_admin %>
+      <%= checkbox f, :is_admin %>
+      <%= error_tag f, :is_admin %>
+    <% end %>
   
     <div>
       <%= submit "Save", phx_disable_with: "Saving..." %>

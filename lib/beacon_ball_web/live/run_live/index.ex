@@ -1,11 +1,13 @@
 defmodule BeaconBallWeb.RunLive.Index do
   use BeaconBallWeb, :live_view
 
+  alias BeaconBall.People.Player
   alias BeaconBall.Runs
 
   @impl true
-  def mount(_params, _session, socket) do
-    {:ok, assign(socket, :runs, list_runs())}
+  def mount(_params, %{"current_player" => current_player}, socket) do
+    {:ok,
+     socket |> assign(:is_admin, Player.is_admin?(current_player)) |> assign(:runs, list_runs())}
   end
 
   @impl true
@@ -33,10 +35,20 @@ defmodule BeaconBallWeb.RunLive.Index do
 
   @impl true
   def handle_event("delete", %{"id" => id}, socket) do
-    run = Runs.get_run!(id)
-    {:ok, _} = Runs.delete_run(run)
+    %{is_admin: is_admin} = socket.assigns
 
-    {:noreply, assign(socket, :runs, list_runs())}
+    case is_admin do
+      true ->
+        run = Runs.get_run!(id)
+        {:ok, _} = Runs.delete_run(run)
+
+        {:noreply, assign(socket, :runs, list_runs())}
+
+      false ->
+        {:noreply,
+         socket
+         |> put_flash(:error, "You are not authorized to delete runs")}
+    end
   end
 
   defp list_runs do

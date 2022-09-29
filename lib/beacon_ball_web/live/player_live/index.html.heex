@@ -8,6 +8,8 @@
       title={@page_title}
       action={@live_action}
       player={@player}
+      is_admin={@is_admin}
+      logged_in_player_id={@logged_in_player_id}
       return_to={Routes.player_index_path(@socket, :index)}
     />
   </.modal>
@@ -32,12 +34,18 @@
 
         <td>
           <span><%= live_redirect "Show", to: Routes.player_show_path(@socket, :show, player) %></span>
-          <span><%= live_patch "Edit", to: Routes.player_index_path(@socket, :edit, player) %></span>
-          <span><%= link "Delete", to: "#", phx_click: "delete", phx_value_id: player.id, data: [confirm: "Are you sure?"] %></span>
+          <%= if @is_admin or @logged_in_player_id == player.id do %>
+            <span><%= live_patch "Edit", to: Routes.player_index_path(@socket, :edit, player) %></span>
+          <% end %>
+          <%= if @is_admin do %>
+            <span><%= link "Delete", to: "#", phx_click: "delete", phx_value_id: player.id, data: [confirm: "Are you sure?"] %></span>
+          <% end %>
         </td>
       </tr>
     <% end %>
   </tbody>
 </table>
 
-<span><%= live_patch "New Player", to: Routes.player_index_path(@socket, :new) %></span>
+<%= if @is_admin do %>
+  <span><%= live_patch "New Player", to: Routes.player_index_path(@socket, :new) %></span>
+<% end %>

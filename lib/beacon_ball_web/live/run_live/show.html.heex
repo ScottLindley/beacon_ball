@@ -32,5 +32,7 @@
 
 </ul>
 
-<span><%= live_patch "Edit", to: Routes.run_show_path(@socket, :edit, @run), class: "button" %></span> |
+<%= if @is_admin do %>
+  <span><%= live_patch "Edit", to: Routes.run_show_path(@socket, :edit, @run), class: "button" %></span> |
+<% end %>
 <span><%= live_redirect "Back", to: Routes.run_index_path(@socket, :index) %></span>

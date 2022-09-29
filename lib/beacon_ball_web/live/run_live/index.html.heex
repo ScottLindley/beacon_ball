@@ -8,6 +8,7 @@
       title={@page_title}
       action={@live_action}
       run={@run}
+      is_admin={@is_admin}
       return_to={Routes.run_index_path(@socket, :index)}
     />
   </.modal>
@@ -32,12 +33,16 @@
 
         <td>
           <span><%= live_redirect "Show", to: Routes.run_show_path(@socket, :show, run) %></span>
-          <span><%= live_patch "Edit", to: Routes.run_index_path(@socket, :edit, run) %></span>
-          <span><%= link "Delete", to: "#", phx_click: "delete", phx_value_id: run.id, data: [confirm: "Are you sure?"] %></span>
+          <%= if @is_admin do %>
+            <span><%= live_patch "Edit", to: Routes.run_index_path(@socket, :edit, run) %></span>
+            <span><%= link "Delete", to: "#", phx_click: "delete", phx_value_id: run.id, data: [confirm: "Are you sure?"] %></span>
+          <% end %>
         </td>
       </tr>
     <% end %>
   </tbody>
 </table>
 
-<span><%= live_patch "New Run", to: Routes.run_index_path(@socket, :new) %></span>
+<%= if @is_admin do %>
+  <span><%= live_patch "New Run", to: Routes.run_index_path(@socket, :new) %></span>
+<% end %>

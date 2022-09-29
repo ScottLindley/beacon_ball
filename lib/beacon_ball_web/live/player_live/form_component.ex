@@ -28,28 +28,50 @@ defmodule BeaconBallWeb.PlayerLive.FormComponent do
   end
 
   defp save_player(socket, :edit, player_params) do
-    case People.update_player(socket.assigns.player, player_params) do
-      {:ok, _player} ->
+    %{is_admin: is_admin, logged_in_player_id: logged_in_player_id} = socket.assigns
+
+    case is_admin or logged_in_player_id == socket.assigns.player.id do
+      true ->
+        case People.update_player(socket.assigns.player, player_params) do
+          {:ok, _player} ->
+            {:noreply,
+             socket
+             |> put_flash(:info, "Player updated successfully")
+             |> push_redirect(to: socket.assigns.return_to)}
+
+          {:error, %Ecto.Changeset{} = changeset} ->
+            {:noreply, assign(socket, :changeset, changeset)}
+        end
+
+      false ->
         {:noreply,
          socket
-         |> put_flash(:info, "Player updated successfully")
+         |> put_flash(:error, "You are not authorized to edit that player")
          |> push_redirect(to: socket.assigns.return_to)}
-
-      {:error, %Ecto.Changeset{} = changeset} ->
-        {:noreply, assign(socket, :changeset, changeset)}
     end
   end
 
   defp save_player(socket, :new, player_params) do
-    case People.create_player(player_params) do
-      {:ok, _player} ->
+    %{is_admin: is_admin} = socket.assigns
+
+    case is_admin do
+      true ->
+        case People.create_player(player_params) do
+          {:ok, _player} ->
+            {:noreply,
+             socket
+             |> put_flash(:info, "Player created successfully")
+             |> push_redirect(to: socket.assigns.return_to)}
+
+          {:error, %Ecto.Changeset{} = changeset} ->
+            {:noreply, assign(socket, changeset: changeset)}
+        end
+
+      false ->
         {:noreply,
          socket
-         |> put_flash(:info, "Player created successfully")
+         |> put_flash(:error, "You are not authorized to create new players")
          |> push_redirect(to: socket.assigns.return_to)}
-
-      {:error, %Ecto.Changeset{} = changeset} ->
-        {:noreply, assign(socket, changeset: changeset)}
     end
   end
 end

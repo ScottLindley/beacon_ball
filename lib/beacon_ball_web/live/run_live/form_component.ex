@@ -28,28 +28,50 @@ defmodule BeaconBallWeb.RunLive.FormComponent do
   end
 
   defp save_run(socket, :edit, run_params) do
-    case Runs.update_run(socket.assigns.run, run_params) do
-      {:ok, _run} ->
+    %{is_admin: is_admin} = socket.assigns
+
+    case is_admin do
+      true ->
+        case Runs.update_run(socket.assigns.run, run_params) do
+          {:ok, _run} ->
+            {:noreply,
+             socket
+             |> put_flash(:info, "Run updated successfully")
+             |> push_redirect(to: socket.assigns.return_to)}
+
+          {:error, %Ecto.Changeset{} = changeset} ->
+            {:noreply, assign(socket, :changeset, changeset)}
+        end
+
+      false ->
         {:noreply,
          socket
-         |> put_flash(:info, "Run updated successfully")
+         |> put_flash(:error, "You are not authorized to edit runs")
          |> push_redirect(to: socket.assigns.return_to)}
-
-      {:error, %Ecto.Changeset{} = changeset} ->
-        {:noreply, assign(socket, :changeset, changeset)}
     end
   end
 
   defp save_run(socket, :new, run_params) do
-    case Runs.create_run(run_params) do
-      {:ok, _run} ->
+    %{is_admin: is_admin} = socket.assigns
+
+    case is_admin do
+      true ->
+        case Runs.create_run(run_params) do
+          {:ok, _run} ->
+            {:noreply,
+             socket
+             |> put_flash(:info, "Run created successfully")
+             |> push_redirect(to: socket.assigns.return_to)}
+
+          {:error, %Ecto.Changeset{} = changeset} ->
+            {:noreply, assign(socket, changeset: changeset)}
+        end
+
+      false ->
         {:noreply,
          socket
-         |> put_flash(:info, "Run created successfully")
+         |> put_flash(:error, "You are not authorized to create runs")
          |> push_redirect(to: socket.assigns.return_to)}
-
-      {:error, %Ecto.Changeset{} = changeset} ->
-        {:noreply, assign(socket, changeset: changeset)}
     end
   end
 end
