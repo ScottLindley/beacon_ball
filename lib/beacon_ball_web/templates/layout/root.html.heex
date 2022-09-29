@@ -9,11 +9,16 @@
     <link phx-track-static rel="stylesheet" href={Routes.static_path(@conn, "/assets/app.css")}/>
     <script defer phx-track-static type="text/javascript" src={Routes.static_path(@conn, "/assets/app.js")}></script>
   </head>
-  <nav>
-    <%= live_redirect "Runs", to: Routes.run_index_path(@conn, :index) %>
-    |
-    <%= live_redirect "Players", to: Routes.player_index_path(@conn, :index) %>
-  </nav>
+  <%= if Phoenix.Controller.current_path(@conn) != "/login" do %>
+    <div style="display: flex; flex-direction: row; justify-content: space-between;">
+      <nav>
+        <%= live_redirect "Runs", to: Routes.run_index_path(@conn, :index) %>
+        |
+        <%= live_redirect "Players", to: Routes.player_index_path(@conn, :index) %>
+      </nav>
+      <span><%= link "Log out", to: "/", phx_click: "logout", data: [confirm: "Are you sure?"] %></span>
+    </div>
+  <% end %>
   <body>
     <%= @inner_content %>
   </body>

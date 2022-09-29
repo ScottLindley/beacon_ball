@@ -4,6 +4,8 @@ defmodule BeaconBallWeb.LiveHelpers do
 
   alias Phoenix.LiveView.JS
 
+  alias BeaconBall.People
+
   @doc """
   Renders a live component inside a modal.
 
@@ -56,5 +58,11 @@ defmodule BeaconBallWeb.LiveHelpers do
     js
     |> JS.hide(to: "#modal", transition: "fade-out")
     |> JS.hide(to: "#modal-content", transition: "fade-out-scale")
+  end
+
+  def logout(socket) do
+    %{"current_player_token" => current_player_token} = socket.assigns.session
+    People.logout(current_player_token)
+    {:noreply, Phoenix.LiveView.push_redirect(socket, to: "/login")}
   end
 end

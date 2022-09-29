@@ -17,7 +17,9 @@ defmodule BeaconBallWeb.Plugs.Authentication do
 
     conn
     |> assign(:current_player, player)
+    |> assign(:current_player_token, token)
     |> put_session(:current_player, player)
+    |> put_session(:current_player_token, token)
   end
 
   defp get_token(conn) do

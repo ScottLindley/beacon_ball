@@ -5,9 +5,12 @@ defmodule BeaconBallWeb.RunLive.Index do
   alias BeaconBall.Runs
 
   @impl true
-  def mount(_params, %{"current_player" => current_player}, socket) do
+  def mount(_params, %{"current_player" => current_player} = session, socket) do
     {:ok,
-     socket |> assign(:is_admin, Player.is_admin?(current_player)) |> assign(:runs, list_runs())}
+     socket
+     |> assign(:session, session)
+     |> assign(:is_admin, Player.is_admin?(current_player))
+     |> assign(:runs, list_runs())}
   end
 
   @impl true

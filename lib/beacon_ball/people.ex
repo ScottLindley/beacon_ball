@@ -50,7 +50,7 @@ defmodule BeaconBall.People do
     session = Repo.get_by(Session, hashed_token: Session.hash_session_token(token))
 
     # Only return player if session is not expired
-    if Session.is_session_expired?(session), do: nil, else: session
+    if session == nil or Session.is_session_expired?(session), do: nil, else: session
   end
 
   @doc """
@@ -168,5 +168,14 @@ defmodule BeaconBall.People do
         token = Session.verify_session(session)
         {:ok, token}
     end
+  end
+
+  def logout(token) do
+    hashed_token = Session.hash_session_token(token)
+
+    from(s in "sessions",
+      where: s.hashed_token == ^hashed_token
+    )
+    |> Repo.delete_all()
   end
 end

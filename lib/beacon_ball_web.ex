@@ -11,11 +11,9 @@ defmodule BeaconBallWeb do
   The definitions below will be executed for every view,
   controller, etc, so keep them short and clean, focused
   on imports, uses and aliases.
-
-  Do NOT define functions inside the quoted expressions
-  below. Instead, define any helper function in modules
-  and import those modules here.
   """
+
+  alias BeaconBall.People
 
   def controller do
     quote do
@@ -46,6 +44,13 @@ defmodule BeaconBallWeb do
     quote do
       use Phoenix.LiveView,
         layout: {BeaconBallWeb.LayoutView, "live.html"}
+
+      # We want to be able to handle this event for all live view pages.
+      def handle_event("logout", _params, socket) do
+        %{"current_player_token" => current_player_token} = socket.assigns.session
+        People.logout(current_player_token)
+        {:noreply, Phoenix.LiveView.push_redirect(socket, to: "/login")}
+      end
 
       unquote(view_helpers())
     end

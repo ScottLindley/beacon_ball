@@ -4,9 +4,10 @@ defmodule BeaconBallWeb.PlayerLive.Show do
   alias BeaconBall.People
 
   @impl true
-  def mount(_params, %{"current_player" => current_player}, socket) do
+  def mount(_params, %{"current_player" => current_player} = session, socket) do
     {:ok,
      socket
+     |> assign(:session, session)
      |> assign(:logged_in_player_id, current_player.id)
      |> assign(:is_admin, People.Player.is_admin?(current_player))}
   end
