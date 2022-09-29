@@ -57,13 +57,13 @@ defmodule BeaconBallWeb.Router do
   scope "/", BeaconBallWeb do
     pipe_through :browser_protected
 
-    get "/", PageController, :index
-
     live "/players", PlayerLive.Index, :index
     live "/players/:id", PlayerLive.Show, :show
 
     live "/runs", RunLive.Index, :index
     live "/runs/:id", RunLive.Show, :show
+
+    get "/", Plugs.Redirect, to: "/runs"
   end
 
   # Enables LiveDashboard only for development
